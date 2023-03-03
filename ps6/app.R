@@ -1,9 +1,4 @@
 ##I was helped by Bella Le
-#Does the table need to have a specific filter or can the widget just add and remove columns? --add & remove columns is good enough
-#how long do the information boxes underneath the data need to be? --3-5 sentences describing what you found and its significance
-#Do we still need an html printout? --no
-#Is there a specific link we need for the shinyapps server?
-
 
 library(tidyverse)
 library(shiny)
@@ -15,18 +10,27 @@ ui <- fluidPage(
   titlePanel("Streaming Service Insights"),
   tabsetPanel(
     tabPanel("General",
-             p("This is an app showing the movie data of different streaming 
+             titlePanel("General Introduction"),
+             sidebarLayout(
+               sidebarPanel(
+               p("This is an app showing the movie data of different streaming 
                platforms based on their age rating, Rotten Tomatoes rating, and year, 
                starting from the earliest year of", strong("1914"), "to the 
                latest year of", strong("2021."), "There are ", nrow(stream), 
-               "rows and", ncol(stream), "columns. The dataset was made and 
+                 "rows and", ncol(stream), "columns. The dataset was made and 
                posted on Kaggle.com about three years ago, and was most recently 
                updated about a year ago. It was mainly inspired by the questions 
                of", em('Which streaming platform(s) can I find this movie on?'),
-               "and", em('What are the target age group movies available on each 
+                 "and", em('What are the target age group movies available on each 
                streaming platform?'), "While there is no original author, there 
                was an available collaborator under the name of Ruchi Bhatia who 
-               seems to own the dataset, so I believe they are the author.")),
+               seems to own the dataset, so I believe they are the author.")
+               ),
+             mainPanel(
+               dataTableOutput("smolTable")
+             )
+             )
+             ),
     tabPanel("Plot",
              titlePanel("Histogram: Movies per Platform (By Age Rating)"),
              sidebarLayout(
@@ -82,6 +86,14 @@ ui <- fluidPage(
 )
 
 server <- function(input, output) {
+  
+  output$smolTable <- renderDataTable({
+    
+    stream %>% 
+      select(ID, Title, Year, Age, `Rotten Tomatoes`) %>% 
+      head(5)
+    
+  })
   
   ##plot outputs
   output$hist <- renderPlot({
