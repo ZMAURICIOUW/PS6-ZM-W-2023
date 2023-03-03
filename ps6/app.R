@@ -1,3 +1,9 @@
+##I was helped by Bella Le
+#Does the table need to have a specific filter or can the widget just add and remove columns?
+#I there any way to shorten the size of the table?
+#how long do the information boxes underneath the data need to be?
+
+
 library(tidyverse)
 library(shiny)
 
@@ -9,16 +15,17 @@ ui <- fluidPage(
   tabsetPanel(
     tabPanel("General",
              p("This is an app showing the movie data of different streaming 
-               platforms based on their age, Rotten Tomatoes rating, and year.
-               There are ", nrow(stream), "rows and", ncol(stream), "columns. 
-               The dataset was made and posted on Kaggle.com about three years 
-               ago, and was most recently updated about a year ago.
-               It was mainly inspired by the questions of", em('Which streaming 
-               platform(s) can I find this movie on?'), "and", em('What are the 
-               target age group movies available on each streaming platform?'), 
-               "While there is no original author, there was an available 
-               collaborator under the name of Ruchi Bhatia who seems to own the 
-               dataset, so I believe they are the author.")),
+               platforms based on their age, Rotten Tomatoes rating, and year, 
+               starting from the earliest year of", strong("1914"), "to the 
+               latest year of", strong("2021."), "There are ", nrow(stream), 
+               "rows and", ncol(stream), "columns. The dataset was made and 
+               posted on Kaggle.com about three years ago, and was most recently 
+               updated about a year ago. It was mainly inspired by the questions 
+               of", em('Which streaming platform(s) can I find this movie on?'),
+               "and", em('What are the target age group movies available on each 
+               streaming platform?'), "While there is no original author, there 
+               was an available collaborator under the name of Ruchi Bhatia who 
+               seems to own the dataset, so I believe they are the author.")),
     tabPanel("Plot",
              titlePanel("Histogram: Movies per Platform (By Age Rating)"),
              sidebarLayout(
@@ -28,20 +35,45 @@ ui <- fluidPage(
                  "Streaming service type:",
                  serviceType,
                  selected = "Netflix"
+                 ),
+                 radioButtons("color", 
+                              "Want to change the color?",
+                              choiceNames = c("Hello darkness my old friend",
+                                              "Looks like Netflix", 
+                                              "Looks like Amazon Prime", 
+                                              "Looks like Hulu", 
+                                              "Looks like Disney+"),
+                              choiceValues = c("black", "red", "lightblue", "lightgreen", 
+                                                    "darkblue")
                  )
                ), 
                mainPanel(
                  plotOutput("hist"),
-                 p("This is a plot output of")
+                 textOutput("plotText")
                ),
              )
     ),
     tabPanel("Table",
+             titlePanel("Table: Selectable Data for Streaming"),
              sidebarLayout(
                sidebarPanel(
+                 checkboxGroupInput(
+                   "filter",
+                   "What would you like to view data for?",
+                   choiceNames = list("Movie Number", "Release Year", 
+                                      "Age Rating", "Critic Reception", 
+                                      "Netflix Availability", "Hulu Availability", 
+                                      "Prime Video Availability", "Disney+ 
+                                      Availability"),
+                   choiceValues = list("ID", "Year", "Age", 
+                                       "Rotten Tomatoes", "Netflix", "Hulu", 
+                                       "Prime Video", "Disney+")
+                 )
                ), 
                mainPanel(
-                 dataTableOutput("table")
+                 dataTableOutput("table"),
+                 textOutput("tableText"),
+                 textOutput("tableText2")
                )
              )
     )
@@ -52,23 +84,63 @@ server <- function(input, output) {
   
   ##plot outputs
   output$hist <- renderPlot({
-    ##plot inputs
+    
+    ##hist inputs
     service <- input$service
     
-    ageDemograph <- stream %>%
+    ageDemo <- stream %>%
       filter(Age != "NA") %>% 
-      mutate(Netflix = sum(Netflix), Hulu = sum(Hulu), 
-                `PrimeVideo` = sum(`Prime Video`), `Disney+` = sum(`Disney+`)) %>% 
-      select(Age, service) %>% 
+      filter(!!rlang::sym(service) == 1)
     
-    #ggplot(aes(x = Age, y = Netflix, fill = as.factor(Age)))
-    ggplot(aes_string("Age", input$service, fill="Age")) +
-      geom_bar(stat = "identity", position = "dodge")
+    ggplot(ageDemo, aes(fill = as.factor(Age))) +
+      geom_bar(mapping = aes(x = ageDemo$Age), stat = "count", fill = input$color) +
+        labs(title = paste("Movies for:", input$service),
+             x = "Age Rating",
+             y = "Movie count",
+             fill = "Age")
+  })
+  
+  output$plotText <- renderText({
+    ##hist inputs
+    service <- input$service
+    
+    ageDemo <- stream %>%
+      filter(Age != "NA") %>% 
+      filter(!!rlang::sym(service) == 1)
+    
+    paste("This is a plot output of the number of movies in each age demographic
+          for the selected streaming service. There are a total of", nrow(ageDemo), 
+          "movies for this streaming platform,", input$service)
   })
   
   output$table <- renderDataTable({
+    
+    filter <- input$filter
+    
     stream %>% 
-      sample(10)
+      select(Title, input$filter)
+    
+  })
+  
+  output$tableText<- renderText({
+    
+    filter <- input$filter
+    
+    stream %>% 
+      select(Title, input$filter)
+    
+    paste("This is a table showing you information for", nrow(stream), "movies,
+          specifically regarding:")
+  })
+  
+  output$tableText2<- renderText({
+    
+    filter <- input$filter
+    
+    stream %>% 
+      select(Title, input$filter)
+    
+    paste(input$filter, "+")
   })
 }
 
