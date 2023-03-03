@@ -5,9 +5,9 @@ account: zamuw
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 8471716
-bundleId: 6912838
+bundleId: 6913034
 url: https://zamuw.shinyapps.io/ps6HW/
-when: 1677868806.35021
-lastSyncTime: 1677868806.35022
+when: 1677871651.85909
+lastSyncTime: 1677871651.8591
 asMultiple: FALSE
 asStatic: FALSE
