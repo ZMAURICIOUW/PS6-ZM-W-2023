@@ -1,7 +1,8 @@
 ##I was helped by Bella Le
-#Does the table need to have a specific filter or can the widget just add and remove columns?
-#I there any way to shorten the size of the table?
-#how long do the information boxes underneath the data need to be?
+#Does the table need to have a specific filter or can the widget just add and remove columns? --add & remove columns is good enough
+#how long do the information boxes underneath the data need to be? --3-5 sentences describing what you found and its significance
+#Do we still need an html printout? --no
+#Is there a specific link we need for the shinyapps server?
 
 
 library(tidyverse)
@@ -15,7 +16,7 @@ ui <- fluidPage(
   tabsetPanel(
     tabPanel("General",
              p("This is an app showing the movie data of different streaming 
-               platforms based on their age, Rotten Tomatoes rating, and year, 
+               platforms based on their age rating, Rotten Tomatoes rating, and year, 
                starting from the earliest year of", strong("1914"), "to the 
                latest year of", strong("2021."), "There are ", nrow(stream), 
                "rows and", ncol(stream), "columns. The dataset was made and 
@@ -110,7 +111,12 @@ server <- function(input, output) {
     
     paste("This is a plot output of the number of movies in each age demographic
           for the selected streaming service. There are a total of", nrow(ageDemo), 
-          "movies for this streaming platform,", input$service)
+          "movies for this streaming platform,", input$service, ". This data 
+          shows that there are large discrepancies in what kind of movies are 
+          available for each demographic. Using a table like this, you can find 
+          many things, such as where a streaming service is lacking material for
+          a certain age demographic. If you are an aspiring film maker and want 
+          to get the big bucks, this is the data description for you!")
   })
   
   output$table <- renderDataTable({
@@ -129,8 +135,13 @@ server <- function(input, output) {
     stream %>% 
       select(Title, input$filter)
     
-    paste("This is a table showing you information for", nrow(stream), "movies,
-          specifically regarding:")
+    paste("This is a table showing you information for an index of", nrow(stream), 
+          "movies. Looking for a specific movie? You can select different kinds 
+          of filters for our data to try and find it using the available checkbox 
+          widget. For each streaming platform's availability rating, a 1 
+          indicates that the movie is available on a streaming platform, 
+          while a 0 indicates that it is not. Here are the filters you've 
+          selected:")
   })
   
   output$tableText2<- renderText({
@@ -140,7 +151,7 @@ server <- function(input, output) {
     stream %>% 
       select(Title, input$filter)
     
-    paste(input$filter, "+")
+    paste("+", input$filter)
   })
 }
 
